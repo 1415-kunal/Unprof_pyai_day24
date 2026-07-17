@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 import os
 import shutil
+from models import QueryRequest
+from rag_chain import get_answer
 
 from create_vector_db import create_vector_db
 
@@ -57,3 +59,18 @@ async def upload_pdf(file: UploadFile = File(...)):
             status_code=500,
             detail=f"Error processing PDF: {str(e)}"
         )
+    
+
+@app.post("/ask")
+def ask_question(request: QueryRequest):
+
+    answer = get_answer(request.query)
+
+    return {
+        "question": request.query,
+        "answer": answer
+    }
+
+print("\nRegistered Routes:")
+for route in app.routes:
+    print(route.methods, route.path)
