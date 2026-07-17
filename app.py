@@ -2,38 +2,58 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 import os
 import shutil
 
+from create_vector_db import create_vector_db
+
 app = FastAPI(
     title="PDF RAG API",
+    description="Upload PDFs and create a FAISS vector database",
     version="1.0.0"
 )
 
+# Folder to store uploaded PDFs
 UPLOAD_FOLDER = "uploads"
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to the PDF RAG API"
+        "message": "Welcome to the PDF RAG API 🚀",
+        "status": "Running"
     }
 
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    # Validate PDF
+    """
+    Upload a PDF, process it, and create a FAISS vector database.
+    """
+
+    # Validate file type
     if file.content_type != "application/pdf":
         raise HTTPException(
             status_code=400,
             detail="Only PDF files are allowed."
         )
 
+    # Save uploaded PDF
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-    return {
-        "message": "PDF uploaded successfully",
-        "filename": file.filename
-    }
+        # Create vector database
+        chunk_count = create_vector_db(file_path)
+
+        return {
+            "message": "PDF uploaded and indexed successfully.",
+            "filename": file.filename,
+            "chunks_created": chunk_count
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing PDF: {str(e)}"
+        )
