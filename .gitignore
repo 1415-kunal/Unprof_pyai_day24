@@ -1,10 +1,23 @@
-__pycache__/
-*.pyc
-
+# Virtual Environment
 .venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
 .env
 
-uploads/
+# VS Code
+.vscode/
+
+# Vector database
 vector_store/
 
-.vscode/
+# Uploaded PDFs
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
